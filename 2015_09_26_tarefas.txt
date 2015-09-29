@@ -1,0 +1,5 @@
+1) Ler/anotar o corpus de acordo com as regras da Profa. Cláudia
+------------
+BONUS: Começar a tratar os exemplos de entrada (x,y) para o SP.
+
+DIVERSÃO: Estudar iOS ou golang.
