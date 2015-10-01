@@ -10,6 +10,11 @@ class TestCorpus(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def testLoadSpeechVerbs(self):
+        verbs = corpus.SpeechVerbs()
+
+        self.assertEqual(len(verbs), 7)
+
     def testInitSuccess(self):
         c = CorpusAd("bosque/Bosque_CF_8.0.ad.txt")
 
@@ -29,14 +34,7 @@ class TestCorpus(unittest.TestCase):
         c.next()
         c.next()
 
-        print(p.nodes)
-
         self.assertNotEqual(p, None)
-
-    def testLoadSpeechVerbs(self):
-        verbs = corpus.loadSpeechVerbs()
-
-        self.assertEqual(len(verbs[1]), 210)
 
     def testHasSpeechVerb(self):
         c = CorpusAd("bosque/Bosque_CF_8.0.ad.txt")

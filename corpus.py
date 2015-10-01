@@ -12,13 +12,49 @@ __author__ = "Rafael Reis <rafael2reis@gmail.com>"
 import re
 
 def annotate():
-    c = CorpusAd("bosque/Bosque_CF_8.0.ad.txt")
+    speechVerbs = SpeechVerbs()
+    c = CorpusAd("bosque/Bosque_CF_8.0.ad.txt", speechVerbs)
 
     p = c.next()
     while p:
-        if p.speechVerb:
-            print(p.sentence)
+        f = findPattern(p, speechVerbs)
+        #if f:
+        #    return
+
         p = c.next()
+
+def findPattern(p, speechVerbs):
+    if p.speechVerb:
+        allNodes = p.nodes
+        speechNodes = p.speechNodes
+
+        for verbNode in speechNodes:
+            acc, subj = searchAccSubj(allNodes, verbNode)
+
+            if (acc and subj 
+                and (verbNode.speechVerb in speechVerbs.pattern1
+                        or verbNode.speechVerb in speechVerbs.pattern2)):
+                print(p.sentence)
+                print("O QUE: " + acc.text())
+                print("QUEM: " + subj.text() + '\n')
+
+                return True
+    return False
+
+def searchAccSubj(allNodes, verbNode):
+    accNode = None
+    subjNode = None
+
+    for node in allNodes:
+        
+        if (node.level == verbNode.parent.level 
+            and node.parent == verbNode.parent.parent):
+            if node.type == 'ACC':
+                accNode = node
+            elif node.type == 'SUBJ':
+                subjNode = node
+
+    return accNode, subjNode
 
 class CorpusAd:
     """
@@ -28,7 +64,7 @@ class CorpusAd:
     pass a fileName to the constructor.
     """
 
-    def __init__(self, fileName=None):
+    def __init__(self, fileName=None, speechVerbs=None):
         """
         Receives a fileName as an argument. The fileName must be
         a valid corpus in the AD format.
@@ -41,7 +77,10 @@ class CorpusAd:
         self.i = 0 # Index of the last line read. It'll be used in the "next" method.
         self.rawLen = len(self.raw)
 
-        self.verbs = loadSpeechVerbs()
+        if speechVerbs:
+            self.verbs = speechVerbs
+        else:
+            self.verbs = SpeechVerbs()
 
     def next(self):
         p = Piece()
@@ -52,29 +91,31 @@ class CorpusAd:
             return None
 
         lastNode = Node()
+        lastNode.child = []
         while not self.isSentenceEnd():
 
             if self.isValidLevel():
                 currLevel = self.getCurrentLevel()
 
                 newNode = Node()
+                newNode.child = []
                 newNode.level = currLevel
                 newNode.line = self.i
 
-                newNode.type, newNode.stype = self.getInfo()
+                newNode.type, newNode.stype, newNode.txt = self.getInfo()
 
                 speechVerb = self.getSpeechVerb(newNode.stype)
+                newNode.speechVerb = speechVerb
 
                 if currLevel > lastNode.level: # Child from lastNode
                     newNode.parent = lastNode
-                    lastNode.child.append(newNode)
                 elif currLevel == lastNode.level: # Sibbling of lastNode
                     newNode.parent = lastNode.parent
-                    newNode.parent.child.append(newNode)
                 else: #currLevel < previousLevel
                     newNode.parent = lastNode.parent
                     while newNode.parent.level >= newNode.level:
                         newNode.parent = newNode.parent.parent
+                newNode.parent.child.append(newNode)
 
                 lastNode = newNode
                 p.nodes.append(newNode)
@@ -82,6 +123,8 @@ class CorpusAd:
                 if speechVerb:
                     p.speechVerb = speechVerb
                     p.speechNodes.append(newNode)
+
+                #print('node: ' + str(newNode.line) + ' ' + newNode.txt + ' ' + str(len(newNode.child)))
 
             self.i += 1
 
@@ -122,36 +165,51 @@ class CorpusAd:
         info = re.sub(r'=+', "", self.raw[self.i]).replace("\n", "")
         
         if len(info) == 1 or info.find(":") == -1:
-            return info, None
+            return info, None, info
         else:
             m = re.search(r'(?P<TYPE>.+):(?P<TAIL>.+)$', info)
-            return m.group('TYPE'), m.group('TAIL')
+            txt = ''
+            if info.find(")") > 0:
+                n = re.search(r'\)( *)(?P<TEXT>[^ ]*)$', info)
+                txt = n.group('TEXT').strip()
+
+            return m.group('TYPE'), m.group('TAIL'), txt
 
     def getSpeechVerb(self, s):
         if s and re.match(r'.*v-fin\(\'\w+\'', s):
             m = re.search(r'.*v-fin\(\'(?P<VERB>\w+)\'', s)
             v = m.group('VERB')
 
-            if v in self.verbs[0]:
+            if v in self.verbs.all:
                 return v
         return ''
 
-def loadSpeechVerbs():
-    verbs = [[], [], [], [], [], [], []]
-    s = set()
-    i = 1
-    with open('verbos_dizer_ACDC.txt', 'r') as f:
-        for line in f:
-            if re.match(r'#(?P<INDEX>\d+)', line):
-                m = re.search(r'#(?P<INDEX>\d+)\n', line)
-                i = int(m.group('INDEX'))
-            else:
-                line = line.strip()
-                s.add(line)
-                verbs[i].append(line)
+class SpeechVerbs:
+    def __init__(self):
+        self.verbs = self.loadSpeechVerbs()
+        self.all = self.verbs[0]
+        self.pattern1 = self.verbs[1]
+        self.pattern2 = self.verbs[2]
 
-    verbs[0] = list(s)
-    return verbs
+    def loadSpeechVerbs(self):
+        verbs = [[], [], [], [], [], [], []]
+        s = set()
+        i = 1
+        with open('verbos_dizer_ACDC.txt', 'r') as f:
+            for line in f:
+                if re.match(r'#(?P<INDEX>\d+)', line):
+                    m = re.search(r'#(?P<INDEX>\d+)\n', line)
+                    i = int(m.group('INDEX'))
+                else:
+                    line = line.strip()
+                    s.add(line)
+                    verbs[i].append(line)
+
+        verbs[0] = list(s)
+        return verbs
+
+    def __len__(self):
+        return len(self.verbs)
 
 class Piece:
 
@@ -172,6 +230,17 @@ class Node:
         self.parent = parent
         self.line = line
         self.level = level
+        self.txt = ''
+
+    def text(self):
+        t = self.txt
+        if t:
+            t = ' ' + t
+
+        for c in self.child:
+            t += c.text()
+
+        return t
 
 class InvalidArgumentException(Exception):
     pass
