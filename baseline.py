@@ -24,11 +24,15 @@ def quotationStart(s):
     qs = ["-" for i in range(len(s))]
     text, dicIndex = detoken(s)
 
-    pattern = re.compile(r"[^\d] [\' \" -] .")
+    pattern = re.compile(r"[^\d] [\'\"-] .")
 
     for m in re.finditer(pattern, text):
-        print(m.end(0))
         qs[ dicIndex[m.end(0)-1] ] = "S"
+
+    pattern = re.compile(r"[\.\?]( #PO#)+ \: (?!#PO#)")
+
+    for m in re.finditer(pattern, text):
+        qs[ dicIndex[m.end(0)] ] = "S"
 
     return qs
 
