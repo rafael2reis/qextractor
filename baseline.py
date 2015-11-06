@@ -14,11 +14,11 @@ import globoquotes
 
 def quotationStart(s):
     """
-    Given a sentence s, return a column c filled as follow:
-    If the token in the i-th line is the beginning of a sentence,
-    c[i] = 'S'. Otherwise, c[i] = '-'
+    Returns an array qs(Quotation Start) filled as follow:
+    If the token in the i-th line is the beginning of a quotation,
+    qs[i] = 'S'. Otherwise, qs[i] = '-'
 
-    where:
+    Arguments:
     sentece s: 2D array in the GloboQuotes format
     """
     qs = ["-" for i in range(len(s))]
@@ -40,12 +40,66 @@ def quotationStart(s):
 
     return qs
 
+def quotationEnd(s, qs):
+    """Creates a 1D array with Quotation End indicators.
+
+    Returns an array qe(Quotation End) filled as follow:
+    If the token in the i-th line is the end of a quotation,
+    qe[i] = 'E'. Otherwise, qe[i] = '-'
+
+    Args:
+        s: 2D array that represents a sentence in the GloboQuotes format
+        qs: 1D array with the quotation start annotation. Must be
+            seen as an additional column of s.
+
+    Returns:
+        An 1D array that indicates if the i-th position is
+        a quotation end.
+    """
+    qe = ["-" for i in range(len(s))]
+
+    a = [ e[0] for e in s ]
+    convertNe(a, s)
+    convertQuotationStart(a, qs)
+    text, dicIndex = detoken(a)
+
+    applyLabel(qe, pattern=r"(\' #QS#.*?)[\'\n]", text=text, dic=dicIndex, group=1, offset=-1, label="E")
+    applyLabel(qe, pattern=r"(\" #QS#.*?)[\"\n]", text=text, dic=dicIndex, group=1, offset=-1, label="E")
+
+    convertProPess(a, s)
+    text, dicIndex = detoken(a)
+    print(text)
+    applyLabel(qe, pattern=r"\- #QS#.*?[[^ex]-[^#PPE#] \n]", text=text, dic=dicIndex, group=0, offset=-1, label="E")
+
+    applyLabel(qe, pattern=r"(#PO# \: #QS#.*?[\.\?])((( #PO#)+ \:)|\n)", text=text, dic=dicIndex, group=1, offset=0, label="E")
+
+    return qe
+
+def applyLabel(q, pattern, text, dic, group, offset, label):
+    p = re.compile(pattern)
+
+    for m in re.finditer(p, text):
+        q[ dic[m.end(group)] + offset ] = label
+
 def convertNe(a, s):
     """
     Call the function convert with the parameters to translate the tokens
     in the array a to "#PO#", whenever NE is in the valueList.
     """
     convert(a, s, transIndex=3, valueList=["I-PER", "I-ORG"], label="#PO#")
+
+def convertQuotationStart(a, qs):
+    """
+    Call the function convert with the parameters to translate the tokens
+    in the array a to "#PO#", whenever NE is in the valueList.
+    """
+    convert(a, qs, transIndex=0, valueList=["S"], label="#QS#")
+
+def convertProPess(a, s):
+    """
+    Translates the tokens in the array a to "#PO#", whenever NE is in the valueList.
+    """
+    convert(a, s, transIndex=1, valueList=["PROPESS"], label="#PPE#")
 
 def convert(a, s, transIndex, valueList, label):
     """
@@ -57,25 +111,30 @@ def convert(a, s, transIndex, valueList, label):
             a[i] = label
 
 
-def detoken(sconv):
-    """
-    Given an array sconv of tokens, returns a text string with the tokens
-    separated by space.
+def detoken(a):
+    """Detokenizes an array of tokens.
 
-    Also, returns a dicionary(k,v) where:
-    v: original index of the token in the sentence
-    k: index of the token in the string
+    Given an array a of tokens, it creates a text string with the tokens
+    separated by space and a dictionary.
 
     This dicionary is usefull to translate from the
     indexes found by regexp in the text string
+
+    Args:
+        a: array of tokens
+
+    Returns:
+        A dicionary(k,v) where:
+            v: original index of the token in the sentence
+            k: index of the token in the string
     """
     text = " "
     index = [2]
 
-    for i in range(len(sconv)):
-        text = text + " " + sconv[i]
+    for i in range(len(a)):
+        text = text + " " + a[i]
         if i > 0:
-            index.append(1 + index[i - 1] + len(sconv[i-1]))
+            index.append(1 + index[i - 1] + len(a[i-1]))
 
     dic = { index[i] : i for i in range(len(index)) }
     
