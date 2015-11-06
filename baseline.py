@@ -22,7 +22,11 @@ def quotationStart(s):
     sentece s: 2D array in the GloboQuotes format
     """
     qs = ["-" for i in range(len(s))]
-    text, dicIndex = detoken(s)
+
+    a = [ e[0] for e in s ]
+    convertNe(a, s)
+
+    text, dicIndex = detoken(a)
 
     pattern = re.compile(r"[^\d] [\'\"-] .")
 
@@ -36,10 +40,26 @@ def quotationStart(s):
 
     return qs
 
-
-def detoken(s):
+def convertNe(a, s):
     """
-    Given a sentence s, return a text string with the tokens
+    Call the function convert with the parameters to translate the tokens
+    in the array a to "#PO#", whenever NE is in the valueList.
+    """
+    convert(a, s, transIndex=3, valueList=["I-PER", "I-ORG"], label="#PO#")
+
+def convert(a, s, transIndex, valueList, label):
+    """
+    Given a 1D array a, a 2D sentence array s, sets
+    a[i] to label, where s[transIndex] in labelList
+    """
+    for i in range(len(s)):
+        if s[i][transIndex] in valueList:
+            a[i] = label
+
+
+def detoken(sconv):
+    """
+    Given an array sconv of tokens, returns a text string with the tokens
     separated by space.
 
     Also, returns a dicionary(k,v) where:
@@ -52,15 +72,8 @@ def detoken(s):
     text = " "
     index = [2]
 
-    sconv = []
-    for i in range(len(s)):
-        if s[i][3] == 'I-PER' or s[i][3] == 'I-ORG':
-            sconv.append("#PO#")
-        else:
-            sconv.append(s[i][0])
-
     for i in range(len(sconv)):
-        text = text + " " + sconv[i]            
+        text = text + " " + sconv[i]
         if i > 0:
             index.append(1 + index[i - 1] + len(sconv[i-1]))
 
