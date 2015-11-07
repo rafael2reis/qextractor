@@ -28,10 +28,10 @@ def quotationStart(s):
 
     text, dicIndex = detoken(a)
 
-    pattern = re.compile(r"[^\d] [\'\"-] .")
+    pattern = re.compile(r"(?=([^\d] [\'\"-] .))")
 
     for m in re.finditer(pattern, text):
-        qs[ dicIndex[m.end(0)-1] ] = "S"
+        qs[ dicIndex[m.end(1)-1] ] = "S"
 
     pattern = re.compile(r"[\.\?]( #PO#)+ \: (?!#PO#)")
 
@@ -63,23 +63,24 @@ def quotationEnd(s, qs):
     convertQuotationStart(a, qs)
     text, dicIndex = detoken(a)
 
-    applyLabel(qe, pattern=r"(\' #QS#.*?)[\'\n]", text=text, dic=dicIndex, group=1, offset=-1, label="E")
-    applyLabel(qe, pattern=r"(\" #QS#.*?)[\"\n]", text=text, dic=dicIndex, group=1, offset=-1, label="E")
+    applyLabel(qe, pattern=r"(\' #QS#.*?)[\'\n]", text=text, dic=dicIndex, group=1, offset=-1, offDic=0, label="E")
+    applyLabel(qe, pattern=r"(\" #QS#.*?)[\"\n]", text=text, dic=dicIndex, group=1, offset=-1, offDic=0, label="E")
 
     convertProPess(a, s)
     text, dicIndex = detoken(a)
-    print(text)
-    applyLabel(qe, pattern=r"\- #QS#.*?[[^ex]-[^#PPE#] \n]", text=text, dic=dicIndex, group=0, offset=-1, label="E")
+    applyLabel(qe, pattern=r"(?=(\- #QS#.*?((?<!ex )\-(?!#PPE#)|$)))", text=text, dic=dicIndex, group=1, offset=-1, offDic=-1, label="E")
 
-    applyLabel(qe, pattern=r"(#PO# \: #QS#.*?[\.\?])((( #PO#)+ \:)|\n)", text=text, dic=dicIndex, group=1, offset=0, label="E")
+    convertQuotationStart(a, qs)
+    text, dicIndex = detoken(a)
+    applyLabel(qe, pattern=r"(?=(#PO# \: #QS#.*?[\.\?])((( #PO#)+ \:)|$))", text=text, dic=dicIndex, group=1, offset=0, offDic=-1, label="E")
 
     return qe
 
-def applyLabel(q, pattern, text, dic, group, offset, label):
+def applyLabel(q, pattern, text, dic, group, offset, offDic, label):
     p = re.compile(pattern)
 
     for m in re.finditer(p, text):
-        q[ dic[m.end(group)] + offset ] = label
+        q[ dic[m.end(group) + offDic] + offset ] = label
 
 def convertNe(a, s):
     """
@@ -134,7 +135,9 @@ def detoken(a):
     for i in range(len(a)):
         text = text + " " + a[i]
         if i > 0:
-            index.append(1 + index[i - 1] + len(a[i-1]))
+            index.append(index[i - 1] + 1 + len(a[i-1]))
+
+    text = text + "\n"
 
     dic = { index[i] : i for i in range(len(index)) }
     

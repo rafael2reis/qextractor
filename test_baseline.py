@@ -11,13 +11,12 @@ class TestBaseline(unittest.TestCase):
         pass
 
     def test_detoken(self):
-        print("test_load")
 
         sne = [ e[0] for e in self.corpus[0] ]
 
         text, tr = baseline.detoken(sne)
         print(len(text))
-        self.assertEqual(len(text), 3780)
+        self.assertEqual(len(text), 3781)
 
     def test_quotationStart(self):
         # Sentence that fits in the first regular expression rule:
