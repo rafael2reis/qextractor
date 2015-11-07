@@ -35,14 +35,27 @@ class TestBaseline(unittest.TestCase):
         # Sentence that fits in the first regular expression rule:
         qs = baseline.quotationStart(self.corpus[0])
         qe = baseline.quotationEnd(self.corpus[0], qs)
-        for i in range(len(qe)):
-            print(self.corpus[0][i][0], "\t", qs[i], qe[i])
 
         # Sentence that fits in the second regular expression rule:
         qs = baseline.quotationStart(self.corpus[231])
         qe = baseline.quotationEnd(self.corpus[231], qs)
+
+        self.assertTrue(True)
+
+    def test_quoteBounds(self):
+        # Sentence that fits in the first regular expression rule:
+        qs = baseline.quotationStart(self.corpus[0])
+        qe = baseline.quotationEnd(self.corpus[0], qs)
+        qb = baseline.quoteBounds(qs, qe)
         for i in range(len(qe)):
-            print(self.corpus[231][i][0], "\t", qs[i], qe[i])
+            print(self.corpus[0][i][0], "\t", qs[i], qe[i], qb[i])
+
+        # Sentence that fits in the second regular expression rule:
+        qs = baseline.quotationStart(self.corpus[231])
+        qe = baseline.quotationEnd(self.corpus[231], qs)
+        qb = baseline.quoteBounds(qs, qe)
+        for i in range(len(qe)):
+            print(self.corpus[231][i][0], "\t", qs[i], qe[i], qb[i])
 
         self.assertTrue(True)
 

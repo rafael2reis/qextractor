@@ -111,6 +111,21 @@ def convert(a, s, transIndex, valueList, label):
         if s[i][transIndex] in valueList:
             a[i] = label
 
+def quoteBounds(qs, qe):
+    quote = ["-" for i in range(len(qs))]
+    inQuote = False
+
+    for i in range(len(qs)-1, 0, -1):
+        if qe[i] == 'E' and not inQuote:
+            quote[i] = 'q'
+            inQuote = True
+        elif qs[i] == 'S' and inQuote:
+            quote[i] = 'q'
+            inQuote = False
+        elif inQuote:
+            quote[i] = 'q'
+
+    return quote
 
 def detoken(a):
     """Detokenizes an array of tokens.
