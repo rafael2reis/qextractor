@@ -12,14 +12,45 @@ __author__ = "Rafael Reis <rafael2reis@gmail.com>"
 import re
 import globoquotes
 
-def quotationStart(s):
-    """
-    Returns an array qs(Quotation Start) filled as follow:
-    If the token in the i-th line is the beginning of a quotation,
-    qs[i] = 'S'. Otherwise, qs[i] = '-'
+def firstLetterUpperCase(s):
+    uc = [ 0 for e in s ]
+    tokenIndex = 0
 
-    Arguments:
-    sentece s: 2D array in the GloboQuotes format
+    for i in range(len(s)):
+        if s[i][tokenIndex][0] == s[i][tokenIndex][0].upper():
+            uc[i] = 1
+
+    return uc
+
+def verbSpeechNeighb(s):
+    posIndex = 1
+    vsn = [ 0 for e in s ]
+
+    n = len(s)
+
+    for i in range(n):
+        if s[i][posIndex] == 'VSAY':
+            vsn[i] = 1
+            if i-1 >= 0:
+                vsn[i-1] = 1
+            if i-2 >= 0:
+                vsn[i-2] = 1
+            if i+1 < n:
+                vsn[i+1] = 1
+            if i+2 < n:
+                vsn[i+2] = 1
+
+    return vsn
+
+
+def quotationStart(s):
+    """Indetifies the quotatins' start by regexp patterns.
+
+    Args:
+        s: 2D array that represents a sentence in the GloboQuotes format
+    Returns:
+        An 1D array that indicates if the i-th position is
+        a quotation start.
     """
     qs = ["-" for i in range(len(s))]
 
@@ -112,6 +143,19 @@ def convert(a, s, transIndex, valueList, label):
             a[i] = label
 
 def quoteBounds(qs, qe):
+    """Creates a 1D array with Quotation Bounds indicators.
+
+    Args:
+        qs: 1D array with the quotation start annotation. An
+            'S' represents a start and '-' otherwise.
+        qe: 1D array with the quotation end annotation. An
+            'E' represents an end and '-' otherwise.
+
+    Returns:
+        An 1D array that indicates if the i-th position 
+        belongs to a quotation, marked with 'q'. If not,
+        the position contains '-'.
+    """
     quote = ["-" for i in range(len(qs))]
     inQuote = False
 

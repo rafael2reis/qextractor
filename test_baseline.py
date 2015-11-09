@@ -18,6 +18,22 @@ class TestBaseline(unittest.TestCase):
         print(len(text))
         self.assertEqual(len(text), 3781)
 
+    def test_firstLetterUpperCase(self):
+        s = [["Guilherme"],["disse"],["a"], ["Maria"]]
+        resp = [1,0,0,1]
+
+        uc = baseline.firstLetterUpperCase(s)
+
+        self.assertEqual(uc, resp)
+
+    def test_verbSpeechNeighb(self):
+        s = [["disse", "VSAY"], ["o", "XX"], ["juiz", "ABC"], ["de", "PREP"], ["o", "ART"]]
+        resp = [1,1,1,0,0]
+
+        vsn = baseline.verbSpeechNeighb(s)
+
+        self.assertEqual(resp, vsn)
+
     def test_quotationStart(self):
         # Sentence that fits in the first regular expression rule:
         qs = baseline.quotationStart(self.corpus[0])
