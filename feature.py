@@ -10,11 +10,13 @@ __version__="1.0"
 __author__ = "Rafael Reis <rafael2reis@gmail.com>"
 
 def create(s, quotes, coref, posIndex, corefIndex, qIndex):
+	features = []
 
 	for i in range(len(quotes)):
 		qs = quotes[i][0]
 		qe = quotes[i][1]
 
+		features.append([])
 		for j in range(len(coref[i])):
 			feat = []
 			c = coref[i][j]
@@ -101,6 +103,88 @@ def create(s, quotes, coref, posIndex, corefIndex, qIndex):
 				feat.append("POSInBetween=" + s[k][posIndex])
 				k += 1
 
+			features[i].append(feat)
 
+	return features
 
+def pos(s, posIndex):
+	pos = set()
+	for r in s:
+		pos.add(r[posIndex])
 
+	return pos
+
+def columns(pos):
+	feat = {}
+	index = 0
+
+	# 1 - Distance
+	for i in range(8):
+		key = "distance" + str(i)
+		feat[key] = index
+		index += 1
+
+	# 2 - Direction
+	feat["directionLeft"] = index
+	index += 1
+	feat["directionRight"] = index
+	index += 1
+
+	# 3 - Verb of Speech
+	feat["verbOfSpeechInBetween"] = index
+	index += 1
+
+	# 4 - Number of Verbs of Speech in Between
+	for i in range(8):
+		key = "numVerbsOfSpeechInBetween" + str(i)
+		feat[key] = index
+		index += 1
+
+	# 5 - Coreference in Between
+	feat["coreferenceInBetween"] = index
+	index += 1
+
+	# 6 - Quote in Between
+	feat["quoteInBetween"] = index
+	index += 1
+
+	# 8 - Coreference POS Window
+	k = -5
+	while k <= 5:
+		pre = "corefPOSWin" + str(k) + "="
+		key = pre + "None"
+		
+		feat[key] = index
+		index += 1
+		
+		for p in pos:
+			key = pre + p
+			feat[key] = index
+			index += 1
+		k += 1
+
+	# 9 - Quotation POS
+	pre = "QuotationPOS="
+	for p in pos:
+		key = pre + p
+		feat[key] = index
+		index += 1
+
+	# 10 - POS In Between
+	pre = "POSInBetween="
+	for p in pos:
+		key = pre + p
+		feat[key] = index
+		index += 1
+
+	# 11 - Bounded Chunk
+	feat["boundedChunk"] = index
+	index += 1
+
+	# 12 - Verb of Speech Neighborhood
+	feat["verbOfSpeechNeighborhood"] = index
+	index += 1
+
+	# 13 - First Letter Upper Case
+	feat["firstLetterUpperCase"] = index
+	index += 1
