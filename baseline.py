@@ -12,17 +12,81 @@ __author__ = "Rafael Reis <rafael2reis@gmail.com>"
 import re
 import globoquotes
 
+def boundedChunk(s):
+    """Indetifies the Bounded Chunk.
+
+    Assigns a 1 to the three quotation marks ' " - and also to all 
+    the tokens between them, whenever there are more than three 
+    tokens between the quotation marks. Otherwise, assigns a 0 to the token.
+
+    Args:
+        s: 2D array that represents a sentence in the GloboQuotes format
+    Returns:
+        An 1D array that indicates if the i-th position is
+        a bounded chunk.
+    """
+    bc = [ 0 for i in range(len(s))]
+
+    a = [ e[0] for e in s ]
+
+    text, dicIndex = detoken(a)
+
+    p1 = re.compile(r"\"( \w+){3}.*\"")
+    p2 = re.compile(r"\'( \w+){3}.*\'")
+    p3 = re.compile(r"\-( \w+){3}.*\-")
+
+    for m in re.finditer(p1, text):
+        i = dicIndex[m.start(0)]
+        end = dicIndex[m.end(0)]
+        while i < end:
+        bc[i] = 1
+
+    for m in re.finditer(p2, text):
+        i = dicIndex[m.start(0)]
+        end = dicIndex[m.end(0)]
+        while i < end:
+        bc[i] = 1
+
+    for m in re.finditer(p3, text):
+        i = dicIndex[m.start(0)]
+        end = dicIndex[m.end(0)]
+        while i < end:
+        bc[i] = 1
+
+    return bc
+
 def firstLetterUpperCase(s):
+    """Indetifies the tokens with First Letter Upper Case.
+
+    Args:
+        s: 2D array that represents a sentence in the GloboQuotes format
+    Returns:
+        An 1D array that indicates if the i-th position is
+        a token that starts with upper letter case.
+    """
     uc = [ 0 for e in s ]
     tokenIndex = 0
+    pattern = re.compile(r"\w+")
 
     for i in range(len(s)):
-        if s[i][tokenIndex][0] == s[i][tokenIndex][0].upper():
+        text = s[i][tokenIndex][0]
+        if re.match(pattern, text) and text == text.upper():
             uc[i] = 1
 
     return uc
 
 def verbSpeechNeighb(s):
+    """Indetifies the Verb of Speech Neighbourhood.
+
+    Assigns a 1 to each verb of speech and also to its four closest tokens. 
+    Otherwise, assigns a 0 to the token.
+
+    Args:
+        s: 2D array that represents a sentence in the GloboQuotes format
+    Returns:
+        An 1D array that indicates if the i-th position is
+        a verb of speech neighborhood.
+    """
     posIndex = 1
     vsn = [ 0 for e in s ]
 

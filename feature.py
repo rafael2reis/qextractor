@@ -9,7 +9,12 @@ feature module - Functions to create the features representing the coreferences.
 __version__="1.0"
 __author__ = "Rafael Reis <rafael2reis@gmail.com>"
 
-def create(s, quotes, coref, posIndex, corefIndex, qIndex):
+def dummyCoref():
+	return ["distanceNone", "directionNone", "verbsOfSpeechInBetweenNone", /
+		"numVerbsOfSpeechInBetweenNone", "coreferenceInBetweenNone", "quoteInBetweenNone", /
+		"boundedChunkNone", "verbOfSpeechNeighborhoodNone", "firstLetterUpperCaseNone"]
+
+def create(s, quotes, coref, posIndex, corefIndex, quoteBounds, bc, vsn, fluc):
 	features = []
 
 	for i in range(len(quotes)):
@@ -17,6 +22,7 @@ def create(s, quotes, coref, posIndex, corefIndex, qIndex):
 		qe = quotes[i][1]
 
 		features.append([])
+		features[i].append(dummyCoref())
 		for j in range(len(coref[i])):
 			feat = []
 			c = coref[i][j]
@@ -46,7 +52,7 @@ def create(s, quotes, coref, posIndex, corefIndex, qIndex):
 					if s[k][posIndex] == 'VSAY':
 						vsay += 1
 					# 6-Quote in Between:
-					if s[k][qIndex] == 'q':
+					if quoteBounds[k] == 'q':
 						quoteBt = True
 
 					k += 1
@@ -103,6 +109,18 @@ def create(s, quotes, coref, posIndex, corefIndex, qIndex):
 				feat.append("POSInBetween=" + s[k][posIndex])
 				k += 1
 
+			#11
+			if bc[c] == 1:
+				feat.append("boundedChunk")
+
+			#12
+			if vsn[c] == 1:
+				feat.append("verbOfSpeechNeighborhood")
+
+			#13
+			if fluc[c] == 1:
+				feat.append("firstLetterUpperCase")
+
 			features[i].append(feat)
 
 	return features
@@ -114,37 +132,52 @@ def pos(s, posIndex):
 
 	return pos
 
+def binary(dic, feat):
+	
+
 def columns(pos):
 	feat = {}
 	index = 0
 
 	# 1 - Distance
+	feat["distanceNone"] = index
+	index += 1
 	for i in range(8):
 		key = "distance" + str(i)
 		feat[key] = index
 		index += 1
 
 	# 2 - Direction
+	feat["directionNone"] = index
+	index += 1
 	feat["directionLeft"] = index
 	index += 1
 	feat["directionRight"] = index
 	index += 1
 
 	# 3 - Verb of Speech
+	feat["verbsOfSpeechInBetweenNone"] = index
+	index += 1
 	feat["verbOfSpeechInBetween"] = index
 	index += 1
 
 	# 4 - Number of Verbs of Speech in Between
+	feat["numVerbsOfSpeechInBetweenNone"] = index
+	index += 1
 	for i in range(8):
 		key = "numVerbsOfSpeechInBetween" + str(i)
 		feat[key] = index
 		index += 1
 
 	# 5 - Coreference in Between
+	feat["coreferenceInBetweenNone"] = index
+	index += 1
 	feat["coreferenceInBetween"] = index
 	index += 1
 
 	# 6 - Quote in Between
+	feat["quoteInBetweenNone"] = index
+	index += 1
 	feat["quoteInBetween"] = index
 	index += 1
 
@@ -178,13 +211,19 @@ def columns(pos):
 		index += 1
 
 	# 11 - Bounded Chunk
+	feat["boundedChunkNone"] = index
+	index += 1
 	feat["boundedChunk"] = index
 	index += 1
 
 	# 12 - Verb of Speech Neighborhood
+	feat["verbOfSpeechNeighborhoodNone"] = index
+	index += 1
 	feat["verbOfSpeechNeighborhood"] = index
 	index += 1
 
 	# 13 - First Letter Upper Case
+	feat["firstLetterUpperCaseNone"] = index
+	index += 1
 	feat["firstLetterUpperCase"] = index
 	index += 1

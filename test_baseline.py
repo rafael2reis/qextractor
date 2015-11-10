@@ -3,24 +3,35 @@ import globoquotes
 import unittest
 
 class TestBaseline(unittest.TestCase):
+    _corpus = None
+
+    @classmethod
+    def setUpClass(cls):
+        cls._corpus = globoquotes.load("GloboQuotes/corpus-globocom-cv.txt")
     
     def setUp(self):
-        self.corpus = globoquotes.load("GloboQuotes/corpus-globocom-cv.txt")
+        pass
 
     def tearDown(self):
         pass
 
     def test_detoken(self):
 
-        sne = [ e[0] for e in self.corpus[0] ]
+        sne = [ e[0] for e in self._corpus[0] ]
 
         text, tr = baseline.detoken(sne)
         print(len(text))
         self.assertEqual(len(text), 3781)
 
+    def test_boundedChunk(self):
+        bc = baseline.boundedChunk(self._corpus[0])
+
+        self.assertTrue(True)
+
+
     def test_firstLetterUpperCase(self):
-        s = [["Guilherme"],["disse"],["a"], ["Maria"]]
-        resp = [1,0,0,1]
+        s = [["Guilherme"],["disse"],["a"], ["Maria"], [":"], ["olha"], ["lá"], ["!"]]
+        resp = [1,0,0,1,0,0,0,0]
 
         uc = baseline.firstLetterUpperCase(s)
 
@@ -36,42 +47,42 @@ class TestBaseline(unittest.TestCase):
 
     def test_quotationStart(self):
         # Sentence that fits in the first regular expression rule:
-        qs = baseline.quotationStart(self.corpus[0])
+        qs = baseline.quotationStart(self._corpus[0])
         #for i in range(len(qs)):
-        #    print(self.corpus[0][i][0], "\t", qs[i])
+        #    print(self._corpus[0][i][0], "\t", qs[i])
 
         # Sentence that fits in the second regular expression rule:
-        qs = baseline.quotationStart(self.corpus[231])
+        qs = baseline.quotationStart(self._corpus[231])
         #for i in range(len(qs)):
-        #    print(self.corpus[231][i][0], "\t", qs[i])
+        #    print(self._corpus[231][i][0], "\t", qs[i])
 
         self.assertTrue(True)
 
     def test_quotationEnd(self):
         # Sentence that fits in the first regular expression rule:
-        qs = baseline.quotationStart(self.corpus[0])
-        qe = baseline.quotationEnd(self.corpus[0], qs)
+        qs = baseline.quotationStart(self._corpus[0])
+        qe = baseline.quotationEnd(self._corpus[0], qs)
 
         # Sentence that fits in the second regular expression rule:
-        qs = baseline.quotationStart(self.corpus[231])
-        qe = baseline.quotationEnd(self.corpus[231], qs)
+        qs = baseline.quotationStart(self._corpus[231])
+        qe = baseline.quotationEnd(self._corpus[231], qs)
 
         self.assertTrue(True)
 
     def test_quoteBounds(self):
         # Sentence that fits in the first regular expression rule:
-        qs = baseline.quotationStart(self.corpus[0])
-        qe = baseline.quotationEnd(self.corpus[0], qs)
+        qs = baseline.quotationStart(self._corpus[0])
+        qe = baseline.quotationEnd(self._corpus[0], qs)
         qb = baseline.quoteBounds(qs, qe)
         for i in range(len(qe)):
-            print(self.corpus[0][i][0], "\t", qs[i], qe[i], qb[i])
+            print(self._corpus[0][i][0], "\t", qs[i], qe[i], qb[i])
 
         # Sentence that fits in the second regular expression rule:
-        qs = baseline.quotationStart(self.corpus[231])
-        qe = baseline.quotationEnd(self.corpus[231], qs)
+        qs = baseline.quotationStart(self._corpus[231])
+        qe = baseline.quotationEnd(self._corpus[231], qs)
         qb = baseline.quoteBounds(qs, qe)
         for i in range(len(qe)):
-            print(self.corpus[231][i][0], "\t", qs[i], qe[i], qb[i])
+            print(self._corpus[231][i][0], "\t", qs[i], qe[i], qb[i])
 
         self.assertTrue(True)
 

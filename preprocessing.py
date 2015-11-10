@@ -15,9 +15,11 @@ import globoquotes
 import baseline
 import wisinput
 import verbspeech
+import feature
 
 def createInput():
     corpus = globoquotes.load("GloboQuotes/corpus-globocom-cv.txt")
+    test = globoquotes.load("GloboQuotes/corpus-globocom-test.txt")
     converter = verbspeech.Converter()
 
     i = 0
@@ -31,11 +33,16 @@ def createInput():
     for k in range(len(s)):
         print(k, s[k][0], s[k][1], s[k][7], qs[k], qe[k], qb[k])
 
-    fluc = baseline.firstLetterUpperCase(s)
+    bc = baseline.boundedChunk(s)
     vsn = baseline.verbSpeechNeighb(s)
+    fluc = baseline.firstLetterUpperCase(s)
 
     quotes = wisinput.interval(qb)
     coref = wisinput.coref(quotes, s, corefIndex=7)
+
+    pos = feature.pos(corpus + test, posIndex = 1)
+
+    feat = feature.create(s, quotes=quotes, coref=coref, posIndex=1, corefIndex=7, quoteBounds=qb, bc=bc, vsn=vsn, fluc=fluc)
 
     k = 0
     for e in quotes:
