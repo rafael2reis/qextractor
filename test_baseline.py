@@ -24,7 +24,11 @@ class TestBaseline(unittest.TestCase):
         self.assertEqual(len(text), 3781)
 
     def test_boundedChunk(self):
-        bc = baseline.boundedChunk(self._corpus[0])
+        s = [["\'"], ["Basta"], ["\'"], [","], ["disse"], ["o"], ["guarda"], ["."], ["\""], ["Agora"], [","], ["só"], ["nos"], ["resta"], ["esperar"], ["\""], [","], ["falou"], ["o"], ["sol."], ["-"], ["A"], ["vida"], ["é"], ["-"], ["afirmou"], ["a"], ["presidente"], ["."]]
+
+        bc = baseline.boundedChunk(s)
+        for i in range(len(bc)):
+            print(s[i][0], bc[i])
 
         self.assertTrue(True)
 

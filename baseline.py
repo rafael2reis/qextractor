@@ -31,27 +31,38 @@ def boundedChunk(s):
 
     text, dicIndex = detoken(a)
 
-    p1 = re.compile(r"\"( \w+){3}.*\"")
-    p2 = re.compile(r"\'( \w+){3}.*\'")
-    p3 = re.compile(r"\-( \w+){3}.*\-")
+    #print(text)
+
+    p1 = re.compile(r"\"( \w+?){3}.*? \"", re.U)
+    p2 = re.compile(r"\'( \w+?){3}.*? \'", re.U)
+    p3 = re.compile(r"\-( \w+?){3}.*? \-", re.U)
 
     for m in re.finditer(p1, text):
+        #print(m.start(0), m.end(0))
+        #print(m.group(0))
         i = dicIndex[m.start(0)]
-        end = dicIndex[m.end(0)]
+        end = dicIndex[m.end(0)-1]
         while i < end:
-        bc[i] = 1
+            bc[i] = 1
+            i += 1
 
     for m in re.finditer(p2, text):
+        #print(m.start(0), m.end(0))
+        #print(m.group(0))
         i = dicIndex[m.start(0)]
-        end = dicIndex[m.end(0)]
+        end = dicIndex[m.end(0)-1]
         while i < end:
-        bc[i] = 1
+            bc[i] = 1
+            i += 1
 
     for m in re.finditer(p3, text):
+        #print(m.start(0), m.end(0))
+        #print(m.group(0))
         i = dicIndex[m.start(0)]
-        end = dicIndex[m.end(0)]
+        end = dicIndex[m.end(0)-1]
         while i < end:
-        bc[i] = 1
+            bc[i] = 1
+            i += 1
 
     return bc
 

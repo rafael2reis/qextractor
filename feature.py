@@ -10,8 +10,8 @@ __version__="1.0"
 __author__ = "Rafael Reis <rafael2reis@gmail.com>"
 
 def dummyCoref():
-	return ["distanceNone", "directionNone", "verbsOfSpeechInBetweenNone", /
-		"numVerbsOfSpeechInBetweenNone", "coreferenceInBetweenNone", "quoteInBetweenNone", /
+	return ["distanceNone", "directionNone", "verbsOfSpeechInBetweenNone", \
+		"numVerbsOfSpeechInBetweenNone", "coreferenceInBetweenNone", "quoteInBetweenNone", \
 		"boundedChunkNone", "verbOfSpeechNeighborhoodNone", "firstLetterUpperCaseNone"]
 
 def create(s, quotes, coref, posIndex, corefIndex, quoteBounds, bc, vsn, fluc):
@@ -45,19 +45,19 @@ def create(s, quotes, coref, posIndex, corefIndex, quoteBounds, bc, vsn, fluc):
 
 			k = start
 			while k <= end:
-					# 1-Distance:
-					if s[k][corefIndex] != "O" and s[k-1][corefIndex] != s[k][corefIndex]:
-						dist.add(s[k][corefIndex])
-					# 4-Number of Verb of Speech:
-					if s[k][posIndex] == 'VSAY':
-						vsay += 1
-					# 6-Quote in Between:
-					if quoteBounds[k] == 'q':
-						quoteBt = True
+				# 1-Distance:
+				if s[k][corefIndex] != "O" and s[k-1][corefIndex] != s[k][corefIndex]:
+					dist.add(s[k][corefIndex])
+				# 4-Number of Verb of Speech:
+				if s[k][posIndex] == 'VSAY':
+					vsay += 1
+				# 6-Quote in Between:
+				if quoteBounds[k] == 'q':
+					quoteBt = True
 
-					k += 1
+				k += 1
 
-			feat.append("distance" + len(dist)) #1
+			feat.append("distance" + str(len(dist))) #1
 			feat.append(direction) #2
 			
 			if vsay > 0:
@@ -102,6 +102,7 @@ def create(s, quotes, coref, posIndex, corefIndex, quoteBounds, bc, vsn, fluc):
 			k = qs
 			while k <= qe:
 				feat.append("QuotationPOS=" + s[k][posIndex])
+				k += 1
 
 			#10
 			k = start
@@ -127,13 +128,28 @@ def create(s, quotes, coref, posIndex, corefIndex, quoteBounds, bc, vsn, fluc):
 
 def pos(s, posIndex):
 	pos = set()
-	for r in s:
-		pos.add(r[posIndex])
+	print(len(s))
+	for sent in s:
+		for r in sent:
+			pos.add(r[posIndex])
 
 	return pos
 
 def binary(dic, feat):
-	
+	bfeat = []
+
+	for i in range(len(feat)):
+		bfeat.append([])
+
+		for j in range(len(feat[i])):
+			bfeat[i].append([])
+			bfeat[i][j] = [ 0 for e in range(len(dic)) ]
+
+			for k in range(len(feat[i][j])):
+				bfeat[i][j][ dic[ feat[i][j][k] ] ] = 1
+
+	return bfeat
+
 
 def columns(pos):
 	feat = {}
@@ -227,3 +243,5 @@ def columns(pos):
 	index += 1
 	feat["firstLetterUpperCase"] = index
 	index += 1
+
+	return feat
