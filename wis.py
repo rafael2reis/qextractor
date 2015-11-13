@@ -14,12 +14,16 @@ __author__ = "Rafael Reis <rafael2reis@gmail.com>"
 
 from collections import namedtuple
 
-Task = namedtuple('Task', 'start end weight')
+Task = namedtuple('Task', 'start end weight index')
 
 def schedule(tasks):
     """Schedule compatible tasks with maximum weight.
-    Returns a tuple composed by the Maximum weight found
-    and the set of compatible tasks
+
+    Args:
+        tasks: Array of Task
+    Returns:
+        A tuple composed by the Maximum weight found
+        and the set of compatible tasks.
     """
     tasks = sortTasksByEnd(tasks)
     tasks.insert(0, Task(0,0,0))
@@ -38,7 +42,7 @@ def schedule(tasks):
             max_w.append( max_w[i - 1] )
             set_tasks.append( set_tasks[i-1] )
 
-    return max_w, set_tasks[num_tasks-1]
+    return max_w[num_tasks-1], set_tasks[num_tasks-1]
 
 def sortTasksByEnd(tasks):
     return sorted(tasks, key=lambda task: task.end)
