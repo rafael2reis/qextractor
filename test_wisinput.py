@@ -3,7 +3,7 @@ import baseline
 import globoquotes
 import unittest
 
-class TestBaseline(unittest.TestCase):
+class TestWisInput(unittest.TestCase):
     
     def setUp(self):
         self.corpus = globoquotes.load("GloboQuotes/corpus-globocom-cv.txt")
@@ -33,6 +33,26 @@ class TestBaseline(unittest.TestCase):
         #[ print(e) for e in inte2 ]
 
         self.assertTrue(inte1 == resp1 and inte2 == resp2)
+
+    def test_corefAnnotated(self):
+        quotes = [[1,2],[6,8]]
+        s = [['O', 'O'],\
+            ['r1+', 'O'],\
+            ['r1+', 'O'],
+            ['O', 'O'],
+            ['O', 'ref00'],
+            ['O', 'O'],
+            ['r1-', 'O'],
+            ['r1-', 'O'],
+            ['r1-', 'O']]
+        gpqIndex = 0
+        corefIndex = 1
+
+        answer = [[4],[4]]
+
+        coref = wisinput.corefAnnotated(quotes, s, gpqIndex, corefIndex)
+
+        self.assertEqual(coref, answer)
 
 if __name__ == '__main__':
     unittest.main()
