@@ -231,7 +231,7 @@ def quoteBounds(qs, qe):
         belongs to a quotation, marked with 'q'. If not,
         the position contains '-'.
     """
-    quote = ["-" for i in range(len(qs))]
+    quote = ["O" for i in range(len(qs))]
     inQuote = False
 
     for i in range(len(qs)-1, 0, -1):

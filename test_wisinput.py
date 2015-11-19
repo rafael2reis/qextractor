@@ -50,7 +50,7 @@ class TestWisInput(unittest.TestCase):
 
         answer = [[4],[4]]
 
-        coref = wisinput.corefAnnotated(quotes, s, gpqIndex, corefIndex)
+        coref = wisinput.corefAnnotated(s, quotes, corefIndex, gpqIndex)
 
         self.assertEqual(coref, answer)
 

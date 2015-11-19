@@ -14,7 +14,7 @@ def dummyCoref():
 		"numVerbsOfSpeechInBetweenNone", "coreferenceInBetweenNone", "quoteInBetweenNone", \
 		"boundedChunkNone", "verbOfSpeechNeighborhoodNone", "firstLetterUpperCaseNone"]
 
-def create(s, quotes, coref, posIndex, corefIndex, quoteBounds, bc, vsn, fluc):
+def create(s, quotes, coref, posIndex, corefIndex, quoteBounds, bc, vsn, fluc, dummy=True):
 	features = []
 
 	for i in range(len(quotes)):
@@ -22,7 +22,8 @@ def create(s, quotes, coref, posIndex, corefIndex, quoteBounds, bc, vsn, fluc):
 		qe = quotes[i][1]
 
 		features.append([])
-		features[i].append(dummyCoref())
+		if dummy:
+			features[i].append(dummyCoref())
 		for j in range(len(coref[i])):
 			feat = []
 			c = coref[i][j]
