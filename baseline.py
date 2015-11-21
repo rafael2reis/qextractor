@@ -169,8 +169,11 @@ def quotationEnd(s, qs):
     convertQuotationStart(a, qs)
     text, dicIndex = detoken(a)
 
-    applyLabel(qe, pattern=r"(\' #QS#.*?)[\'\n]", text=text, dic=dicIndex, group=1, offset=-1, offDic=0, label="E")
-    applyLabel(qe, pattern=r"(\" #QS#.*?)[\"\n]", text=text, dic=dicIndex, group=1, offset=-1, offDic=0, label="E")
+    print("baseline.quotationEnd:", text)
+    print("len(dic):", len(dicIndex))
+
+    applyLabel(qe, pattern=r"(\' #QS#.*?)[\'\n]", text=text, dic=dicIndex, group=1, offset=-1, offDic=-1, label="E")
+    applyLabel(qe, pattern=r"(\" #QS#.*?)[\"\n]", text=text, dic=dicIndex, group=1, offset=-1, offDic=-1, label="E")
 
     convertProPess(a, s)
     text, dicIndex = detoken(a)
@@ -186,6 +189,7 @@ def applyLabel(q, pattern, text, dic, group, offset, offDic, label):
     p = re.compile(pattern)
 
     for m in re.finditer(p, text):
+        print(m.end(group) + offDic)
         q[ dic[m.end(group) + offDic] + offset ] = label
 
 def convertNe(a, s):
@@ -264,15 +268,19 @@ def detoken(a):
             k: index of the token in the string
     """
     text = " "
-    index = [2]
+    #index = [2]
+    index = [0]
 
     for i in range(len(a)):
         text = text + " " + a[i]
-        if i > 0:
-            index.append(index[i - 1] + 1 + len(a[i-1]))
+        index.append(i)
+        for j in range(len(a[i])):
+            index.append(i)
+        #if i > 0:
+            #index.append(index[i - 1] + 1 + len(a[i-1]))
 
     text = text + "\n"
 
-    dic = { index[i] : i for i in range(len(index)) }
+    #dic = { index[i] : i for i in range(len(index)) }
     
-    return text, dic
+    return text, index

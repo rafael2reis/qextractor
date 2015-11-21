@@ -17,11 +17,15 @@ class TestBaseline(unittest.TestCase):
 
     def test_detoken(self):
 
-        sne = [ e[0] for e in self._corpus[0] ]
+        #sne = [ e[0] for e in self._corpus[0] ]
+        sne = ["O", "cachorro", "abanou", "o", "rabo", "."]
+        resp1 = "  O cachorro abanou o rabo .\n"
+        resp2 = [0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,4,4,4,4,4,5,5]
 
         text, tr = baseline.detoken(sne)
-        print(len(text))
-        self.assertEqual(len(text), 3781)
+        print(text)
+        print(tr)
+        self.assertTrue(text == resp1 and resp2 == tr)
 
     def test_boundedChunk(self):
         s = [["\'"], ["Basta"], ["\'"], [","], ["disse"], ["o"], ["guarda"], ["."], ["\""], ["Agora"], [","], ["só"], ["nos"], ["resta"], ["esperar"], ["\""], [","], ["falou"], ["o"], ["sol."], ["-"], ["A"], ["vida"], ["é"], ["-"], ["afirmou"], ["a"], ["presidente"], ["."]]

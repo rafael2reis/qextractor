@@ -26,7 +26,7 @@ def schedule(tasks):
         and the set of compatible tasks.
     """
     tasks = sortTasksByEnd(tasks)
-    tasks.insert(0, Task(0,0,0))
+    tasks.insert(0, Task(0,0,0,0))
 
     num_tasks = len(tasks)
     p = createPreviousArray(tasks)

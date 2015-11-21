@@ -54,6 +54,9 @@ class TestWis(unittest.TestCase):
 
         self.assertEqual(set_correct, set_tasks)
 
+    def test_schedule_2(self):
+        
+
 
 if __name__ == '__main__':
     unittest.main()

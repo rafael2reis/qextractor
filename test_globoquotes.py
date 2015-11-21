@@ -18,7 +18,7 @@ class TestGloboQuotes(unittest.TestCase):
         print("len 0: ", len(corpus[0]))
         print("corpus[0]", len(corpus[0]), " corpus[0][0]=", len(corpus[0][0]))
 
-        [print(x) for x in corpus[0]]
+        #[print(x) for x in corpus[0]]
 
         self.assertTrue(len(corpus) == 551 and len(corpus[0]) == 774)
 

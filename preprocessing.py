@@ -28,73 +28,72 @@ def createInput():
     open(FILE_NAME, 'w').close()
 
     i = 0
-    #for i in range(len(corpus)):
-    s = corpus[i]
-    qs = baseline.quotationStart(s)
-    qe = baseline.quotationEnd(s, qs)
-    qb = baseline.quoteBounds(qs, qe)
+    for i in range(len(corpus)):
+        s = corpus[i]
+        qs = baseline.quotationStart(s)
+        qe = baseline.quotationEnd(s, qs)
+        qb = baseline.quoteBounds(qs, qe)
 
-    converter.vsay(s, tokenIndex = 0, posIndex = 1)
-    pos = feature.pos(corpus + test, posIndex = 1)
-    columns = feature.columns(pos)
+        converter.vsay(s, tokenIndex = 0, posIndex = 1)
+        pos = feature.pos(corpus + test, posIndex = 1)
+        columns = feature.columns(pos)
 
-    for k in range(len(s)):
-        print(k, s[k][0], s[k][1], s[k][7], qs[k], qe[k], qb[k])
+        for k in range(len(s)):
+            print(k, s[k][0].ljust(30), s[k][1].ljust(10), s[k][7].ljust(5), qs[k], qe[k], qb[k])
 
-    # Baseline: X
-    print("Create bc...")
-    bc = baseline.boundedChunk(s)
-    print("Create vsn...")
-    vsn = baseline.verbSpeechNeighb(s)
-    print("Create fluc...")
-    fluc = baseline.firstLetterUpperCase(s)
+        # Baseline: X
+        print("Create bc...")
+        bc = baseline.boundedChunk(s)
+        print("Create vsn...")
+        vsn = baseline.verbSpeechNeighb(s)
+        print("Create fluc...")
+        fluc = baseline.firstLetterUpperCase(s)
 
-    print("Identifying quotes...")
-    quotes = wisinput.interval(qb)
+        print("Identifying quotes...")
+        quotes = wisinput.interval(qb)
 
-    print("Identifying coreferences...")
-    coref = wisinput.coref(s, quotes, corefIndex=7)
+        print("Identifying coreferences...")
+        coref, labels = wisinput.coref(s, quotes, corefIndex=7)
 
-    print("Creating features...")
-    feat = feature.create(s, quotes=quotes, coref=coref, posIndex=1, corefIndex=7, quoteBounds=qb, bc=bc, vsn=vsn, fluc=fluc)
+        print("Creating features...")
+        feat = feature.create(s, quotes=quotes, coref=coref, posIndex=1, corefIndex=7, quoteBounds=qb, bc=bc, vsn=vsn, fluc=fluc)
 
-    print("Binarying features...")
-    bfeat = feature.binary(columns, feat)
+        print("Binarying features...")
+        bfeat = feature.binary(columns, feat)
 
-    # Answer: Y
-    print("Output: Creating y...")
-    qbA = [ e[INDEX_QB] for e in s ]
-    print(qbA)
+        # Answer: Y
+        print("Output: Creating y...")
+        qbA = [ e[INDEX_QB] for e in s ]
 
-    print("Output: Identifying quotes...")
-    quotesA = wisinput.interval(qbA)
-    print("Output: Quotes = ", len(quotesA))
+        print("Output: Identifying quotes...")
+        quotesA = wisinput.interval(qbA)
+        print("Output: Quotes = ", len(quotesA))
 
-    print("Output: Identifying coreferences...")
-    corefA = wisinput.corefAnnotated(s, quotes=quotesA, corefIndex=7, gpqIndex=6)
-    print("Output: Coref = ", len(corefA))
+        print("Output: Identifying coreferences...")
+        corefA, labelsA = wisinput.corefAnnotated(s, quotes=quotesA, corefIndex=7, gpqIndex=6)
+        print("Output: Coref = ", len(corefA))
 
-    print("Output: Creating features...")
-    featA = feature.create(s, quotes=quotesA, coref=corefA, posIndex=1, corefIndex=7, \
-            quoteBounds=qbA, bc=bc, vsn=vsn, fluc=fluc, dummy=False)
+        print("Output: Creating features...")
+        featA = feature.create(s, quotes=quotesA, coref=corefA, posIndex=1, corefIndex=7, \
+                quoteBounds=qbA, bc=bc, vsn=vsn, fluc=fluc, dummy=False)
 
-    print("Output: Binarying features...")
-    bfeatA = feature.binary(columns, featA)
-    print("Output: bFeat = ", len(bfeatA))
+        print("Output: Binarying features...")
+        bfeatA = feature.binary(columns, featA)
+        print("Output: bFeat = ", len(bfeatA))
 
-    with open(FILE_NAME, 'a', newline='') as csvfile:
-        swriter = csv.writer(csvfile, delimiter=';')
+        with open(FILE_NAME, 'a', newline='') as csvfile:
+            swriter = csv.writer(csvfile, delimiter=';')
 
-        for p in range(len(bfeat)):
-            for q in range(len(bfeat[p])):
-                swriter.writerow([i, "x"] + list(quotes[p]) + bfeat[p][q])
+            for p in range(len(bfeat)):
+                for q in range(len(bfeat[p])):
+                    swriter.writerow([i, "x"] + list(quotes[p]) + [labels[p][q]] + bfeat[p][q])
 
-        for p in range(len(bfeatA)):
-            for q in range(len(bfeatA[p])):
-                swriter.writerow([i, "y"] + list(quotesA[p]) + bfeatA[p][q])
+            for p in range(len(bfeatA)):
+                for q in range(len(bfeatA[p])):
+                    swriter.writerow([i, "y"] + list(quotesA[p]) + [labelsA[p][q]] + bfeatA[p][q])
 
-    print("Done!")
-    k = 0
+        print("Done!")
+    #k = 0
     #for e in quotes:
     #    print(e, coref[k], bfeat[k])
     #   k += 1

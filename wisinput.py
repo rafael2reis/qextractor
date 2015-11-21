@@ -4,7 +4,7 @@
 #
 """
 wisinput module - Functions to create the input for WIS problem,
-	given the quotations' attributes.
+    given the quotations' attributes.
 
 """
 __version__="1.0"
@@ -18,9 +18,9 @@ def interval(qb, index = 0):
 
     Args:
         qs: Array having a column with the quotation bounds annotation.
-        	A 'q' represents that the i-th token belongs to a quotation.
+            A 'q' represents that the i-th token belongs to a quotation.
         index (optional): The index of the column in qs array with the
-        	quotation bounds annotation.
+            quotation bounds annotation.
 
     Returns:
         An 1D array with tuples (s, e), where each tuple represents
@@ -28,26 +28,27 @@ def interval(qb, index = 0):
     """
     intervals = []
     if type(qb[0]) is list:
-    	qb = [ e[index] for e in qb ]
+        qb = [ e[index] for e in qb ]
 
     length = len(qb)
     inQuote = False
     s, e = 0, 0
     for i in range(length):
-    	if qb[i] == 'q':
-    		if not inQuote:
-    			s = i
-    			inQuote = True
-    		elif ((i + 1 >= length) 
-    				or (qb[i + 1] == '-')):
-    			e = i
-    			inQuote = False
-    			intervals.append( (s, e) )
-    			s, e = 0, 0
+        #print(i, qb[i])
+        if qb[i] == 'q':
+            if not inQuote:
+                s = i
+                inQuote = True
+            elif ((i + 1 >= length) 
+                    or (qb[i + 1] == 'O')):
+                e = i
+                inQuote = False
+                intervals.append( (s, e) )
+                s, e = 0, 0
 
     return intervals
 
-def coref(quotes, s, corefIndex):
+def coref(s, quotes, corefIndex):
     """
         two after the quotation and six before it
 
@@ -59,12 +60,14 @@ def coref(quotes, s, corefIndex):
             An array with the indexes of the coreferences
     """
     coref = []
+    corefLabels = []
 
     for q in quotes:
         qstart = q[0]
         qend = q[1]
 
         index = []
+        labels = ["dummy"]
 
         i = qend + 1
         n = 0
@@ -85,11 +88,14 @@ def coref(quotes, s, corefIndex):
             i -= 1
 
         index.sort()
+        for x in index:
+            labels.append(s[x][corefIndex])
         coref.append(index)
+        corefLabels.append(labels)
 
-    return coref
+    return coref, corefLabels
 
-def corefAnnotated(quotes, s, gpqIndex, corefIndex):
+def corefAnnotated(s, quotes, corefIndex, gpqIndex):
     """Searches for the correct coreferences of the quotes given.
 
     GPQ is in the format: r(dist)(inc), where:
@@ -104,10 +110,10 @@ def corefAnnotated(quotes, s, gpqIndex, corefIndex):
     Returns:
         An array with the indexes of the coreferences
     """
-    coref = []
     pattern = re.compile(r"r(\d+)([-+])")
 
     index = []
+    labels = []
 
     for q in quotes:
         qstart = q[0]
@@ -127,8 +133,9 @@ def corefAnnotated(quotes, s, gpqIndex, corefIndex):
             if s[i][corefIndex] != 'O':
                 if count == dist:
                     index.append([i])
+                    labels.append([s[i][corefIndex]])
                 count += 1
 
             i += inc
 
-    return index
+    return index, labels

@@ -181,7 +181,7 @@ def columns(pos):
 	# 4 - Number of Verbs of Speech in Between
 	feat["numVerbsOfSpeechInBetweenNone"] = index
 	index += 1
-	for i in range(8):
+	for i in range(20):
 		key = "numVerbsOfSpeechInBetween" + str(i)
 		feat[key] = index
 		index += 1
