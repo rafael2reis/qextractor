@@ -11,13 +11,17 @@ __version__="1.0"
 import wis
 import numpy as np
 
-def argmax(w, e):
+def argmax(w, e, loss=0):
 
     tasks = []
     i = 0
     for r in e.x:
+        l = 0
+        if loss > 0 and not find(r, e.y):
+            l = loss
+
         coref = w * np.array(r.coref.feat)
-        t = wis.Task(r.quote.start, r.quote.end, np.sum(coref), i)
+        t = wis.Task(r.quote.start, r.quote.end, np.sum(coref) + l, i)
 
         tasks.append(t)
         i += 1
@@ -27,6 +31,17 @@ def argmax(w, e):
     result = convertTasks(set_tasks, e.x)
 
     return result
+
+def find(r, y):
+    start = r.quote.start
+    end = r.quote.end
+    coref = r.coref.label
+
+    for x in y:
+        if x.quote.start == start and x.quote.end == end and x.coref.label == coref:
+            return x
+
+    return None
 
 def phi(e, y=None):
     if not y:

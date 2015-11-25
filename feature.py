@@ -134,6 +134,8 @@ def pos(s, posIndex):
 		for r in sent:
 			pos.add(r[posIndex])
 
+	pos.add("VSAY")
+
 	return pos
 
 def binary(dic, feat):

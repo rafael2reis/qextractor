@@ -6,8 +6,13 @@ class TestPreprocessing(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def testCreateInput(self):
+    def test_createInput(self):
     	preprocessing.createInput()
+
+    	self.assertTrue(True)
+
+    def test_createInputTest(self):
+    	preprocessing.createInput(fileName="qextractor_input_test.csv", createTest=True)
 
     	self.assertTrue(True)
 

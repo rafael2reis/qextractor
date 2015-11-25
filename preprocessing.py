@@ -20,12 +20,21 @@ import csv
 INDEX_QB = 10
 FILE_NAME = "qextractor_input.csv"
 
-def createInput():
+def createInput(fileName=None, createTest=False):
     corpus = globoquotes.load("GloboQuotes/corpus-globocom-cv.txt")
     test = globoquotes.load("GloboQuotes/corpus-globocom-test.txt")
     converter = verbspeech.Converter()
 
-    open(FILE_NAME, 'w').close()
+    if not fileName:
+        fileName = FILE_NAME
+
+    open(fileName, 'w').close()
+
+    pos = feature.pos(corpus + test, posIndex = 1)
+    columns = feature.columns(pos)
+
+    if createTest:
+        corpus = test
 
     i = 0
     for i in range(len(corpus)):
@@ -35,8 +44,6 @@ def createInput():
         qb = baseline.quoteBounds(qs, qe)
 
         converter.vsay(s, tokenIndex = 0, posIndex = 1)
-        pos = feature.pos(corpus + test, posIndex = 1)
-        columns = feature.columns(pos)
 
         for k in range(len(s)):
             print(k, s[k][0].ljust(30), s[k][1].ljust(10), s[k][7].ljust(5), qs[k], qe[k], qb[k])
@@ -81,7 +88,7 @@ def createInput():
         bfeatA = feature.binary(columns, featA)
         print("Output: bFeat = ", len(bfeatA))
 
-        with open(FILE_NAME, 'a', newline='') as csvfile:
+        with open(fileName, 'a', newline='') as csvfile:
             swriter = csv.writer(csvfile, delimiter=';')
 
             for p in range(len(bfeat)):

@@ -19,9 +19,10 @@ def structured(w, train, test, epochs, argmax, phi):
     i = 0
     while i < epochs:
         for e in train:
-            yp =  argmax(w, e)
+            yp =  argmax(w, e, loss=400)
             w = w + phi(e) - phi(e, yp)
         i += 1
 
-        metrics.show(w=w, train=train, test=test, argmax=argmax, epoch=str(i))
+        if test:
+            metrics.show(w=w, train=train, test=test, argmax=argmax, epoch=str(i))
     return w
