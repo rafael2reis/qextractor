@@ -11,50 +11,31 @@ __author__ = "Rafael Reis <rafael2reis@gmail.com>"
 
 import re
 
-def annotate():
-    speechVerbs = SpeechVerbs()
-    c = CorpusAd("bosque/Bosque_CF_8.0.ad.txt", speechVerbs)
+def groupByFeed(c):
+
+    feeds = []
 
     p = c.next()
+    lastIndex = p.index
+
+    text = p.sentence.replace('\n', "")
+    feed = Feed()
+    feed.addPiece(p)
+
     while p:
-        f = findPattern(p, speechVerbs)
-        #if f:
-        #    return
-
         p = c.next()
+        if p:
+            if p.index != lastIndex:
+                print(text, '\n')
+                feeds.append(feed)
 
-def findPattern(p, speechVerbs):
-    if p.speechVerb:
-        allNodes = p.nodes
-        speechNodes = p.speechNodes
+                text = p.sentence.replace('\n', "")
+                lastIndex = p.index
+                feed = Feed()
+            else:
+                text += " " + p.sentence
 
-        for verbNode in speechNodes:
-            acc, subj = searchAccSubj(allNodes, verbNode)
-
-            if (acc and subj 
-                and (verbNode.speechVerb in speechVerbs.pattern1
-                        or verbNode.speechVerb in speechVerbs.pattern2)):
-                print(p.sentence)
-                print("O QUE: " + acc.text())
-                print("QUEM: " + subj.text() + '\n')
-
-                return True
-    return False
-
-def searchAccSubj(allNodes, verbNode):
-    accNode = None
-    subjNode = None
-
-    for node in allNodes:
-        
-        if (node.level == verbNode.parent.level 
-            and node.parent == verbNode.parent.parent):
-            if node.type == 'ACC':
-                accNode = node
-            elif node.type == 'SUBJ':
-                subjNode = node
-
-    return accNode, subjNode
+            feed.addPiece(p)
 
 class CorpusAd:
     """
@@ -85,16 +66,22 @@ class CorpusAd:
     def next(self):
         p = Piece()
 
-        p.sentence = self.getSentenceDescription()
+        begin = self.goToSentenceBegin()
+        
+        #p.sentence = self.getSentenceDescription()
 
-        if not p.sentence:
+        if not begin:
             return None
 
         lastNode = Node()
         lastNode.child = []
         while not self.isSentenceEnd():
 
-            if self.isValidLevel():
+            if self.isSentenceDescription():
+                p.sentence = self.getSentenceDescription()
+            elif self.isSource():
+                p.index = self.getPieceIndex()
+            elif self.isValidLevel():
                 currLevel = self.getCurrentLevel()
 
                 newNode = Node()
@@ -111,10 +98,15 @@ class CorpusAd:
                     newNode.parent = lastNode
                 elif currLevel == lastNode.level: # Sibbling of lastNode
                     newNode.parent = lastNode.parent
+                    newNode.previous = lastNode
+                    lastNode.next = newNode
                 else: #currLevel < previousLevel
                     newNode.parent = lastNode.parent
                     while newNode.parent.level >= newNode.level:
                         newNode.parent = newNode.parent.parent
+                        
+                    newNode.parent.child[-1].next = newNode
+                    newNode.previous = newNode.parent.child[-1]
                 newNode.parent.child.append(newNode)
 
                 lastNode = newNode
@@ -134,19 +126,19 @@ class CorpusAd:
         return self.raw[self.i] == "<s>\n"
 
     def isSentenceDescription(self):
-        return re.match(r'^CF\d+-\d+' , self.raw[self.i])
+        return re.match(r'^C[FP]\d+-\d+' , self.raw[self.i])
 
-    def getSentenceDescription(self):
+    def goToSentenceBegin(self):
         while self.i < self.rawLen and not self.isSentenceBegin():
             self.i += 1
 
         if self.i >= self.rawLen:
             return None
 
-        while not self.isSentenceDescription():
-            self.i += 1
+        return 1
 
-        m = re.search(r'^CF\d+-\d+\w* (?P<SENT>.+)$', self.raw[self.i])
+    def getSentenceDescription(self):
+        m = re.search(r'^C[FP]\d+-\d+\w* (?P<SENT>.+)$', self.raw[self.i])
         s = m.group('SENT')
 
         return s
@@ -157,9 +149,18 @@ class CorpusAd:
     def isValidLevel(self):
         return re.match(r'^=+' , self.raw[self.i])
 
+    def isSource(self):
+        return re.match(r'^SOURCE:' , self.raw[self.i]) or re.match(r'^SOURCECETENFolha' , self.raw[self.i])
+
     def getCurrentLevel(self):
         levels = re.findall('=', self.raw[self.i])
         return len(levels)
+
+    def getPieceIndex(self):
+        m = re.search(r' n=(?P<INDEX>\d+) ', self.raw[self.i])
+        if not m:
+            raise NameError('SOURCE: sem n=\d+ : ' + self.raw[self.i])
+        return int(m.group('INDEX'))
 
     def getInfo(self):
         info = re.sub(r'=+', "", self.raw[self.i]).replace("\n", "")
@@ -170,13 +171,13 @@ class CorpusAd:
             m = re.search(r'(?P<TYPE>.+):(?P<TAIL>.+)$', info)
             txt = ''
             if info.find(")") > 0:
-                n = re.search(r'\)( *)(?P<TEXT>[^ ]*)$', info)
+                n = re.search(r'\)([ \t]*)(?P<TEXT>[^ ]*)$', info)
                 txt = n.group('TEXT').strip()
 
             return m.group('TYPE'), m.group('TAIL'), txt
 
     def getSpeechVerb(self, s):
-        if s and re.match(r'.*v-fin\(\'\w+\'', s):
+        if s and "v-fin" in s and "FUT" not in s:
             m = re.search(r'.*v-fin\(\'(?P<VERB>\w+)\'', s)
             v = m.group('VERB')
 
@@ -190,9 +191,14 @@ class SpeechVerbs:
         self.all = self.verbs[0]
         self.pattern1 = self.verbs[1]
         self.pattern2 = self.verbs[2]
+        self.pattern3 = self.verbs[3]
+        self.pattern4 = self.verbs[4]
+        self.pattern5 = self.verbs[5]
+        self.pattern6 = self.verbs[6]
+        self.pattern7 = self.verbs[7]
 
     def loadSpeechVerbs(self):
-        verbs = [[], [], [], [], [], [], []]
+        verbs = [[], [], [], [], [], [], [], []]
         s = set()
         i = 1
         with open('verbos_dizer_ACDC.txt', 'r') as f:
@@ -211,6 +217,14 @@ class SpeechVerbs:
     def __len__(self):
         return len(self.verbs)
 
+class Feed:
+
+    def __init__(self, pieces=[]):
+        self.pieces = ps
+
+    def addPiece(self, piece):
+        self.pieces.append(p)
+
 class Piece:
 
     def __init__(self):
@@ -220,14 +234,17 @@ class Piece:
         self.nodes = []
         self.speechNodes = []
         self.speechVerb = ""
+        self.index = 0
 
 class Node:
 
-    def __init__(self, type=None, stype=None, child=[], parent=None, line=None, level=0):
+    def __init__(self, type=None, stype=None, child=[], parent=None, next=None, previous=None, line=None, level=0):
         self.type = type
         self.stype = stype
         self.child = child
         self.parent = parent
+        self.next = next
+        self.previous = previous
         self.line = line
         self.level = level
         self.txt = ''

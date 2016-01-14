@@ -13,7 +13,7 @@ class TestCorpus(unittest.TestCase):
     def testLoadSpeechVerbs(self):
         verbs = corpus.SpeechVerbs()
 
-        self.assertEqual(len(verbs), 7)
+        self.assertEqual(len(verbs), 8)
 
     def testInitSuccess(self):
         c = CorpusAd("bosque/Bosque_CF_8.0.ad.txt")
@@ -42,9 +42,32 @@ class TestCorpus(unittest.TestCase):
         v = c.getSpeechVerb("==========MV:v-fin('dizer' <fs-subst> <nosubj> PR 3S IND)é")
         self.assertEqual(v, 'dizer')
 
-    def testAnnotate(self):
-        corpus.annotate()
-        self.assertEqual(1, 1)
+    def testNodeNextPrevious(self):
+        c = CorpusAd("bosque/Bosque_CF_8.0.ad.txt")
+        p = c.next()
+
+        node = p.nodes[0]
+        i = 0
+        while node.next:
+            print(node.next.txt, node.next.level, node.next.stype)
+            node = node.next
+            i += 1
+
+        self.assertEqual(i, 1)
+
+    def testNodeNextPrevious2(self):
+        c = CorpusAd("bosque/Bosque_CF_8.0.ad.txt")
+        c.next()
+        p = c.next()
+
+        node = p.nodes[18]
+        i = 0
+        while node.next:
+            print("|", node.next.txt, "|", node.next.level, node.next.stype)
+            node = node.next
+            i += 1
+
+        self.assertEqual(i, 5)
 
 if __name__ == '__main__':
     unittest.main()
