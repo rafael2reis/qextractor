@@ -104,7 +104,7 @@ class CorpusAd:
                     newNode.parent = lastNode.parent
                     while newNode.parent.level >= newNode.level:
                         newNode.parent = newNode.parent.parent
-                        
+
                     newNode.parent.child[-1].next = newNode
                     newNode.previous = newNode.parent.child[-1]
                 newNode.parent.child.append(newNode)
@@ -178,7 +178,7 @@ class CorpusAd:
 
     def getSpeechVerb(self, s):
         if s and "v-fin" in s and "FUT" not in s:
-            m = re.search(r'.*v-fin\(\'(?P<VERB>\w+)\'', s)
+            m = re.search(r'.*v-fin\(\'(?P<VERB>(\w|-)+)\'', s)
             v = m.group('VERB')
 
             if v in self.verbs.all:
